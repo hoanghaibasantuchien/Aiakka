@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Game Bắn Súng</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #111;
+      font-family: sans-serif;
+      overflow: hidden;
+    }
+    #menu, #game, #installTip {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #1e1e1e;
+      color: white;
+      z-index: 2;
+    }
+    #menu h1 { margin-bottom: 30px; font-size: 36px; }
+    #menu button {
+      padding: 15px 30px;
+      margin: 10px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+
+    #installTip {
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      z-index: 3;
+    }
+
+    #installTip span {
+      display: block;
+      margin-top: 15px;
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    /* Game area (giữ nguyên) */
+    #game { display: none; background-color: #222; overflow: hidden; }
+
+    #player {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: url('https://via.placeholder.com/50x50/00ff00?text=P') no-repeat center;
+      background-size: cover;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .bullet {
+      position: absolute;
+      width: 5px;
+      height: 10px;
+      background-color: red;
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+    }
+
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      background-color: #444;
+      color: white;
+      font-size: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menu -->
+  <div id="menu">
+    <h1>🔫 Game Bắn Súng</h1>
+    <button onclick="startGame()">Chơi Ngay</button>
+  </div>
+
+  <!-- Game -->
+  <div id="game">
+    <div id="player"></div>
+    <div id="controls">
+      <div class="control-btn" ontouchstart="moveLeft()" ontouchend="stopMove()">◀</div>
+      <div class="control-btn" ontouchstart="shoot()">🔫</div>
+      <div class="control-btn" ontouchstart="moveRight()" ontouchend="stopMove()">▶</div>
+    </div>
+  </div>
+
+  <!-- Hướng dẫn thêm vào Màn hình chính -->
+  <div id="installTip">
+    👉 Để chơi toàn màn hình, hãy nhấn nút <strong>Chia sẻ</strong> (biểu tượng hình vuông có mũi tên lên) trong Safari, sau đó chọn <strong>“Thêm vào Màn hình chính”</strong>.
+    <span>(Làm một lần, sau đó mở từ biểu tượng sẽ không còn thanh tìm kiếm)</span>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const player = document.getElementById('player');
+    let moveDirection = 0;
+    let gameInterval;
+
+    function startGame() {
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      gameInterval = setInterval(update, 16); // 60fps
+    }
+
+    function moveLeft() {
+      moveDirection = -1;
+    }
+
+    function moveRight() {
+      moveDirection = 1;
+    }
+
+    function stopMove() {
+      moveDirection = 0;
+    }
+
+    function shoot() {
+      const bullet = document.createElement('div');
+      bullet.className = 'bullet';
+      bullet.style.left = (player.offsetLeft + player.offsetWidth / 2 - 2.5) + 'px';
+      bullet.style.top = player.offsetTop + 'px';
+      document.getElementById('game').appendChild(bullet);
+
+      const bulletInterval = setInterval(() => {
+        bullet.style.top = (bullet.offsetTop - 5) + 'px';
+        if (bullet.offsetTop < 0) {
+          bullet.remove();
+          clearInterval(bulletInterval);
+        }
+      }, 16);
+    }
+
+    function update() {
+      const speed = 5;
+      const maxX = window.innerWidth - player.offsetWidth;
+      let newX = player.offsetLeft + moveDirection * speed;
+      if (newX < 0) newX = 0;
+      if (newX > maxX) newX = maxX;
+      player.style.left = newX + 'px';
+    }
+
+    // Gợi ý người dùng thêm vào Màn hình chính (chỉ hiện lần đầu)
+    window.onload = function () {
+      const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      const isInStandalone = ('standalone' in window.navigator) && window.navigator.standalone;
+
+      if (isiOS && !isInStandalone) {
+        document.getElementById('installTip').style.display = 'flex';
+      }
+    };
+  </script>
+</body>
+</html>
